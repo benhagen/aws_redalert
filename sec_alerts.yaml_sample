@@ -1,0 +1,42 @@
+FunctionName: sec_alerts
+Runtime: python2.7
+Description: Security alerts
+Role: sec_alerts
+RoleDefinition: >
+  {
+    "PolicyDocument": {
+      "Version": "2012-10-17",
+      "Statement": [
+        {
+          "Effect": "Allow",
+          "Action": [
+              "logs:CreateLogGroup",
+              "logs:CreateLogStream",
+              "logs:PutLogEvents",
+              "events:*",
+              "es:*"
+          ],
+          "Resource": "*"
+        },
+        {
+          "Effect": "Allow",
+          "Action": [
+              "lambda:*"
+          ],
+          "Resource": "arn:aws:lambda:us-east-1:{{CURRENT_ACCOUNT}}:function:sec_alerts"
+        }
+      ]
+    }
+  }
+Handler: sec_alerts.lambda_handler
+Timeout: 30
+MemorySize: 256
+Version: 1
+Accounts:
+  - <AMAZON_ACCOUNT>
+Regions:
+  - us-east-1
+Package:
+  - sec_alerts.py
+  - config.json
+  - ./plugins
