@@ -24,6 +24,7 @@ class plugin(object):
 
 
 def send_slack_message(message, hook_url):
+	print message
 	response = requests.post(hook_url, data=json.dumps(message))
 	return response
 

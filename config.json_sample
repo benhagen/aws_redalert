@@ -2,6 +2,7 @@
 	"ELASTICSEARCH_SERVER": "<AWS_HOSTED_ES_SERVER>",
 	"ELASTICSEARCH_SERVER_REGION": "us-east-1",
 	"SLACK_WEBHOOK": "https://hooks.slack.com/services/<SLACK_WEBHOOK>",
+	"SLACK_CHANNEL": "redalert",
 	"ACCOUNTS": {
 		"111111111111":	{"name": "sample amazon account"}
 	}

@@ -29,7 +29,7 @@ class modifyimageattributes(object):
 					event['detail']['sourceIPAddress'],
 				)
 				message = {
-					"channel": "#sec-alerts",
+					"channel": self.config['SLACK_CHANNEL'],
 					"username": "Security-Otter Bot",
 					"icon_url": "http://d.hx.io/1NeN/2oFhQrsA.png",
 					"attachments": [

@@ -19,7 +19,11 @@ def lambda_handler(event, context=None):
 	logging.warn(json.dumps(event))
 
 	if event.get("action") == "configure":
-		configure_events()
+		if context:
+			region = context.invoked_function_arn.split(":")[3]
+		else:
+			region = "us-east-1"
+		configure_events(region)
 		return
 
 	if 'detail' in event:
@@ -31,8 +35,8 @@ def lambda_handler(event, context=None):
 	return
 
 
-def configure_events():
-	events_client = boto3.client('events', region_name="us-east-1")
+def configure_events(region):
+	events_client = boto3.client('events', region_name=region)
 	response = events_client.list_rules(NamePrefix='sec_alerts')
 	current_rules = {}
 
@@ -57,8 +61,8 @@ def configure_events():
 			logging.warn("[+] Creating missing rule'{}'".format(rule_name))
 			events_client.put_rule(Name=rule_name, EventPattern=json.dumps(rule['EventPattern'], sort_keys=True), State='ENABLED')
 
-	function_arn = "arn:aws:lambda:us-east-1:{}:function:sec_alerts".format(CONFIG['CURRENT_ACCOUNT'])
-	lambda_client = boto3.client('lambda', region_name="us-east-1")
+	function_arn = "arn:aws:lambda:{}:{}:function:sec_alerts".format(region, CONFIG['CURRENT_ACCOUNT'])
+	lambda_client = boto3.client('lambda', region_name=region)
 	try:
 		response = lambda_client.get_policy(FunctionName="sec_alerts")
 	except:
@@ -76,14 +80,14 @@ def configure_events():
 			logging.warn("[+] Adding target to event '{}'".format(rule_name))
 			events_client.put_targets(Rule=rule_name, Targets=[{'Id': 'string', 'Arn': function_arn}])
 		has_permission = False
-		rule_arn = "arn:aws:events:us-east-1:{}:rule/{}".format(CONFIG['CURRENT_ACCOUNT'], rule_name)
+		rule_arn = "arn:aws:events:{}:{}:rule/{}".format(region, CONFIG['CURRENT_ACCOUNT'], rule_name)
 		if policy:
 			for statement in policy['Statement']:
 				if statement.get('Condition', {}).get('ArnLike', {}).get('AWS:SourceArn') == rule_arn:
 					has_permission = True
 		if not has_permission:
 			logging.warning("[+] Adding rule permission for event '{}'".format(rule_name))
-			lambda_client.add_permission(FunctionName="sec_alerts", StatementId=rule_name, Action='lambda:InvokeFunction', Principal="events.amazonaws.com", SourceArn="arn:aws:events:us-east-1:{}:rule/{}".format(CONFIG['CURRENT_ACCOUNT'], rule_name))
+			lambda_client.add_permission(FunctionName="sec_alerts", StatementId=rule_name, Action='lambda:InvokeFunction', Principal="events.amazonaws.com", SourceArn="arn:aws:events:{}:{}:rule/{}".format(region, CONFIG['CURRENT_ACCOUNT'], rule_name))
 
 
 if __name__ == '__main__':

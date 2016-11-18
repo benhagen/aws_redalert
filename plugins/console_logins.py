@@ -19,8 +19,11 @@ class console_logins(object):
 			query.add_time_window((60 * 24 * 7))
 			query.must.append({"term": {"userIdentity.arn": event['detail']['userIdentity']['arn']}})
 			query.must.append({"term": {"sourceIPAddress": event['detail']['sourceIPAddress']}})
+			query.must.append({"term": {"eventName": 'ConsoleLogin'}})
+			query.must.append({"term": {"responseElements.ConsoleLogin": 'Success'}})
 			query.must_not.append({"exists": {"field": "errorCode"}})
 			result = query.query(count=True)
+			print result
 			if result:
 				logging.warn("ES query for user console login returned {} results in the last week; not alerting.".format(result))
 				return False
@@ -31,7 +34,7 @@ class console_logins(object):
 
 	def process(self, event):
 		text = "*{}* (MFA: {}) logged in to the AWS console for *{}* ({}) from `{}` using: ```{}```".format(
-			event['detail']['userIdentity']['userName'],
+			event['detail']['userIdentity']['arn'],
 			event['detail']['additionalEventData']['MFAUsed'],
 			self.config['ACCOUNTS'][event['account']]['name'],
 			event['account'],
@@ -39,7 +42,7 @@ class console_logins(object):
 			event['detail']['userAgent']
 		)
 		message = {
-			"channel": "#sec-alerts",
+			"channel": self.config['SLACK_CHANNEL'],
 			"username": "Security-Otter Bot",
 			"icon_url": "http://d.hx.io/1NeN/2oFhQrsA.png",
 			"attachments": [
