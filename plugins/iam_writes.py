@@ -24,7 +24,12 @@ class securitygroup_writes(object):
 		return False
 
 	def process(self, event):
-		text = "```{}```".format(json.dumps(event, indent=4, sort_keys=True))
+		text = "Who: `{who}`\nRequest Parameters:\n```{req}```\nResponse:\n```{res}```\nError Code:\n```{err}```\nFull Event:\n```{event}```".format(
+			event=json.dumps(event, indent=4, sort_keys=True),
+			req=json.dumps(event.get('detail', {}).get('requestParameters')),
+			res=json.dumps(event.get('detail', {}).get('responseElements')),
+			err=json.dumps(event.get('detail', {}).get('errorCode')),
+			who=json.dumps(event.get('detail', {}).get('userIdentity', {}).get('arn')))
 		message = {
 			"channel": self.config['SLACK_CHANNEL'],
 			"username": "Security-Otter Bot",
