@@ -19,6 +19,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+libs/
 lib64/
 parts/
 sdist/
@@ -90,3 +91,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# pycharm/vscode
+.idea/*
